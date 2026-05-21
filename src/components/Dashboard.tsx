@@ -1,9 +1,19 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppState, useAppActions } from '../hooks/useAppState';
-import { getWeightPercentages } from '../gachaEngine';
+import { getWeightPercentages, xpProgress } from '../gachaEngine';
 import type { Rarity } from '../types';
-import { RARITIES, RARITY_LABELS, DEFAULT_WEIGHTS } from '../types';
+import {
+  RARITIES,
+  RARITY_LABELS,
+  DEFAULT_WEIGHTS,
+  PITY_THRESHOLD,
+  XP_THRESHOLDS,
+  LEVEL_UNLOCKS,
+  DAILY_POINTS_REWARD,
+  FREE_REROLLS_PER_SESSION,
+  REROLL_POINT_COST,
+} from '../types';
 import RestaurantCard from './RestaurantCard';
 
 const EMOJI_OPTIONS = [
@@ -20,19 +30,30 @@ const RARITY_SLIDER_COLORS: Record<Rarity, string> = {
   legendary: '#fbbf24',
 };
 
+type Section = 'restaurants' | 'rates' | 'profile';
+
 export default function Dashboard() {
   const { state } = useAppState();
-  const { addRestaurant, removeRestaurant, editRestaurant, setWeights } =
-    useAppActions();
+  const {
+    addRestaurant,
+    removeRestaurant,
+    editRestaurant,
+    setWeights,
+    claimDailyPoints,
+  } = useAppActions();
 
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState('🍔');
   const [rarity, setRarity] = useState<Rarity>('common');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<'restaurants' | 'rates'>('restaurants');
+  const [activeSection, setActiveSection] = useState<Section>('restaurants');
 
   const percentages = getWeightPercentages(state.weights);
+  const progress = xpProgress(state.xp, XP_THRESHOLDS);
+
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const canClaimDaily = state.lastDailyClaimDate !== todayISO;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,13 +97,13 @@ export default function Dashboard() {
           Dashboard
         </h1>
         <p className="text-sm text-white/40 mt-1">
-          Manage your restaurant pool & pull rates
+          Manage your restaurant pool, rates & profile
         </p>
       </div>
 
       {/* Section toggle */}
       <div className="flex gap-1 p-1 rounded-xl bg-white/[0.04] mb-6">
-        {(['restaurants', 'rates'] as const).map((s) => (
+        {(['restaurants', 'rates', 'profile'] as const).map((s) => (
           <button
             key={s}
             onClick={() => setActiveSection(s)}
@@ -99,14 +120,19 @@ export default function Dashboard() {
               />
             )}
             <span className="relative z-10">
-              {s === 'restaurants' ? `Restaurants (${state.restaurants.length})` : 'Pull Rates'}
+              {s === 'restaurants'
+                ? `Pool (${state.restaurants.length})`
+                : s === 'rates'
+                ? 'Rates'
+                : 'Profile'}
             </span>
           </button>
         ))}
       </div>
 
       <AnimatePresence mode="wait">
-        {activeSection === 'restaurants' ? (
+        {/* ═══ RESTAURANTS ═══ */}
+        {activeSection === 'restaurants' && (
           <motion.div
             key="restaurants"
             initial={{ opacity: 0, x: -20 }}
@@ -226,14 +252,16 @@ export default function Dashboard() {
               )}
             </div>
           </motion.div>
-        ) : (
+        )}
+
+        {/* ═══ PULL RATES ═══ */}
+        {activeSection === 'rates' && (
           <motion.div
             key="rates"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
           >
-            {/* Pull rate sliders */}
             <div className="rounded-xl border border-white/5 bg-white/[0.03] backdrop-blur-sm p-5 space-y-5">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-white/70 uppercase tracking-wider">
@@ -309,6 +337,152 @@ export default function Dashboard() {
                       <span className="text-[10px] text-white/40">{RARITY_LABELS[r]}</span>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Pity info */}
+              <div className="pt-3 border-t border-white/5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] text-white/30 uppercase tracking-wider">Pity System</p>
+                  <span className="text-[10px] text-white/50 font-mono">
+                    {state.pityCounter} / {PITY_THRESHOLD}
+                  </span>
+                </div>
+                <div className="mt-1.5 h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500"
+                    animate={{ width: `${(state.pityCounter / PITY_THRESHOLD) * 100}%` }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+                  />
+                </div>
+                <p className="text-[10px] text-white/20 mt-1">
+                  After {PITY_THRESHOLD} pulls without Rare+, the next pull guarantees a higher-tier result.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ═══ PROFILE ═══ */}
+        {activeSection === 'profile' && (
+          <motion.div
+            key="profile"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="space-y-4"
+          >
+            {/* XP & Level card */}
+            <div className="rounded-xl border border-white/5 bg-white/[0.03] backdrop-blur-sm p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-white/70 uppercase tracking-wider">
+                  Level & XP
+                </h2>
+                <span className="text-lg font-[Outfit] font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  Lv. {state.level}
+                </span>
+              </div>
+              <div className="h-2 rounded-full bg-white/[0.06] overflow-hidden mb-2">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-amber-500"
+                  animate={{ width: `${progress.fraction * 100}%` }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+                />
+              </div>
+              <div className="flex justify-between text-[10px] text-white/40">
+                <span>Total XP: {state.xp.toLocaleString()}</span>
+                <span>
+                  {progress.needed > 0
+                    ? `${progress.current} / ${progress.needed} to next level`
+                    : 'Max Level!'}
+                </span>
+              </div>
+            </div>
+
+            {/* Level unlocks */}
+            <div className="rounded-xl border border-white/5 bg-white/[0.03] backdrop-blur-sm p-5">
+              <h2 className="text-sm font-semibold text-white/70 uppercase tracking-wider mb-3">
+                Level Unlocks
+              </h2>
+              <div className="space-y-2">
+                {Object.entries(LEVEL_UNLOCKS).map(([lvl, desc]) => {
+                  const unlocked = state.level >= Number(lvl);
+                  return (
+                    <div
+                      key={lvl}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        unlocked ? 'bg-purple-500/10' : 'bg-white/[0.02]'
+                      }`}
+                    >
+                      <span
+                        className={`text-xs font-bold font-mono w-8 ${
+                          unlocked ? 'text-purple-400' : 'text-white/20'
+                        }`}
+                      >
+                        {lvl}
+                      </span>
+                      <span
+                        className={`text-xs ${
+                          unlocked ? 'text-white/80' : 'text-white/30'
+                        }`}
+                      >
+                        {unlocked ? '✅' : '🔒'} {desc}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Virtual Points & Daily */}
+            <div className="rounded-xl border border-white/5 bg-white/[0.03] backdrop-blur-sm p-5">
+              <h2 className="text-sm font-semibold text-white/70 uppercase tracking-wider mb-3">
+                Virtual Points
+              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl">💎</span>
+                  <span className="text-2xl font-[Outfit] font-black text-white">
+                    {state.virtualPoints}
+                  </span>
+                </div>
+                <button
+                  onClick={claimDailyPoints}
+                  disabled={!canClaimDaily}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                    canClaimDaily
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/20 hover:from-amber-400 hover:to-orange-400'
+                      : 'bg-white/[0.04] text-white/20 cursor-not-allowed'
+                  }`}
+                  id="daily-claim-btn"
+                >
+                  {canClaimDaily ? `Claim +${DAILY_POINTS_REWARD} 💎` : 'Claimed Today ✓'}
+                </button>
+              </div>
+              <div className="text-[10px] text-white/30 space-y-1">
+                <p>• Earn {DAILY_POINTS_REWARD} points daily by claiming</p>
+                <p>• {FREE_REROLLS_PER_SESSION} free rerolls per session</p>
+                <p>• Extra rerolls cost {REROLL_POINT_COST} 💎 each</p>
+              </div>
+            </div>
+
+            {/* Session stats */}
+            <div className="rounded-xl border border-white/5 bg-white/[0.03] backdrop-blur-sm p-5">
+              <h2 className="text-sm font-semibold text-white/70 uppercase tracking-wider mb-3">
+                Session Stats
+              </h2>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center">
+                  <p className="text-lg font-bold text-white">{state.freeRerolls}</p>
+                  <p className="text-[10px] text-white/30">Free Rerolls</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-bold text-white">{state.rerollsUsed}</p>
+                  <p className="text-[10px] text-white/30">Rerolls Used</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-bold text-white">{state.pullHistory.length}</p>
+                  <p className="text-[10px] text-white/30">Total Pulls</p>
                 </div>
               </div>
             </div>

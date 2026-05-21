@@ -7,9 +7,16 @@ import {
   type ReactNode,
   type Dispatch,
 } from 'react';
-import type { AppState, AppAction, Restaurant } from '../types';
-import { DEFAULT_WEIGHTS } from '../types';
+import type { AppState, AppAction, Restaurant, PullDecision } from '../types';
+import {
+  DEFAULT_WEIGHTS,
+  FREE_REROLLS_PER_SESSION,
+  RARITY_RANK,
+  DAILY_POINTS_REWARD,
+  XP_THRESHOLDS,
+} from '../types';
 import { loadFromStorage, saveToStorage } from '../utils/storage';
+import { calculateLevel } from '../gachaEngine';
 
 /* ── Default starter restaurants ─────────────────────────────────── */
 
@@ -27,9 +34,16 @@ const STARTER_RESTAURANTS: Restaurant[] = [
   { id: crypto.randomUUID(), name: 'The French Laundry', rarity: 'legendary', emoji: '👨‍🍳' },
 ];
 
+/* ── Today helper ────────────────────────────────────────────────── */
+
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 /* ── Initial state ───────────────────────────────────────────────── */
 
 function getInitialState(): AppState {
+  const storedXp = loadFromStorage<number>('xp', 0);
   return {
     restaurants: loadFromStorage('restaurants', STARTER_RESTAURANTS),
     weights: loadFromStorage('weights', DEFAULT_WEIGHTS),
@@ -37,6 +51,17 @@ function getInitialState(): AppState {
     currentPull: null,
     view: 'pull',
     isPulling: false,
+
+    pityCounter: loadFromStorage('pityCounter', 0),
+
+    freeRerolls: FREE_REROLLS_PER_SESSION,
+    rerollsUsed: 0,
+
+    xp: storedXp,
+    level: calculateLevel(storedXp, XP_THRESHOLDS),
+
+    virtualPoints: loadFromStorage('virtualPoints', 0),
+    lastDailyClaimDate: loadFromStorage('lastDailyClaimDate', null),
   };
 }
 
@@ -70,16 +95,65 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'SET_WEIGHTS':
       return { ...state, weights: action.payload };
 
-    case 'EXECUTE_PULL':
+    case 'EXECUTE_PULL': {
+      const pull = action.payload;
+      const isHighTier = RARITY_RANK[pull.restaurant.rarity] >= RARITY_RANK['rare'];
+      const newXp = state.xp + pull.xpEarned;
       return {
         ...state,
-        currentPull: action.payload,
-        pullHistory: [action.payload, ...state.pullHistory],
+        currentPull: pull,
+        pullHistory: [pull, ...state.pullHistory],
         isPulling: true,
+        pityCounter: isHighTier ? 0 : state.pityCounter + 1,
+        xp: newXp,
+        level: calculateLevel(newXp, XP_THRESHOLDS),
       };
+    }
 
     case 'SET_PULLING':
       return { ...state, isPulling: action.payload };
+
+    case 'DECIDE_PULL': {
+      if (!state.currentPull) return state;
+      const updated = { ...state.currentPull, decision: action.payload };
+      return {
+        ...state,
+        currentPull: updated,
+        pullHistory: state.pullHistory.map((p) =>
+          p.id === updated.id ? updated : p
+        ),
+      };
+    }
+
+    case 'REROLL': {
+      // Replace current pull with new one, keep old in history as "rerolled"
+      const newPull = action.payload;
+      const isHighTier = RARITY_RANK[newPull.restaurant.rarity] >= RARITY_RANK['rare'];
+      const newXp = state.xp + newPull.xpEarned;
+      return {
+        ...state,
+        currentPull: newPull,
+        pullHistory: [newPull, ...state.pullHistory],
+        freeRerolls: state.freeRerolls > 0 ? state.freeRerolls - 1 : state.freeRerolls,
+        rerollsUsed: state.rerollsUsed + 1,
+        pityCounter: isHighTier ? 0 : state.pityCounter + 1,
+        xp: newXp,
+        level: calculateLevel(newXp, XP_THRESHOLDS),
+      };
+    }
+
+    case 'CLAIM_DAILY_POINTS':
+      return {
+        ...state,
+        virtualPoints: state.virtualPoints + DAILY_POINTS_REWARD,
+        lastDailyClaimDate: todayISO(),
+      };
+
+    case 'SPEND_POINTS':
+      return {
+        ...state,
+        virtualPoints: Math.max(0, state.virtualPoints - action.payload),
+      };
 
     case 'CLEAR_PULL':
       return { ...state, currentPull: null, isPulling: false };
@@ -119,6 +193,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     saveToStorage('pullHistory', state.pullHistory);
   }, [state.pullHistory]);
+
+  useEffect(() => {
+    saveToStorage('pityCounter', state.pityCounter);
+  }, [state.pityCounter]);
+
+  useEffect(() => {
+    saveToStorage('xp', state.xp);
+  }, [state.xp]);
+
+  useEffect(() => {
+    saveToStorage('virtualPoints', state.virtualPoints);
+  }, [state.virtualPoints]);
+
+  useEffect(() => {
+    saveToStorage('lastDailyClaimDate', state.lastDailyClaimDate);
+  }, [state.lastDailyClaimDate]);
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>
@@ -172,6 +262,29 @@ export function useAppActions() {
     [dispatch]
   );
 
+  const decidePull = useCallback(
+    (decision: PullDecision) =>
+      dispatch({ type: 'DECIDE_PULL', payload: decision }),
+    [dispatch]
+  );
+
+  const reroll = useCallback(
+    (newResult: AppState['currentPull']) => {
+      if (newResult) dispatch({ type: 'REROLL', payload: newResult });
+    },
+    [dispatch]
+  );
+
+  const claimDailyPoints = useCallback(
+    () => dispatch({ type: 'CLAIM_DAILY_POINTS' }),
+    [dispatch]
+  );
+
+  const spendPoints = useCallback(
+    (amount: number) => dispatch({ type: 'SPEND_POINTS', payload: amount }),
+    [dispatch]
+  );
+
   const clearPull = useCallback(
     () => dispatch({ type: 'CLEAR_PULL' }),
     [dispatch]
@@ -195,6 +308,10 @@ export function useAppActions() {
     setWeights,
     executePullAction,
     setPulling,
+    decidePull,
+    reroll,
+    claimDailyPoints,
+    spendPoints,
     clearPull,
     clearHistory,
     setView,
