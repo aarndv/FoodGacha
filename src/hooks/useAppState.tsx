@@ -62,6 +62,8 @@ function getInitialState(): AppState {
 
     virtualPoints: loadFromStorage('virtualPoints', 0),
     lastDailyClaimDate: loadFromStorage('lastDailyClaimDate', null),
+
+    activeCategoryFilter: null,
   };
 }
 
@@ -163,6 +165,9 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
     case 'SET_VIEW':
       return { ...state, view: action.payload, currentPull: null, isPulling: false };
+
+    case 'SET_CATEGORY_FILTER':
+      return { ...state, activeCategoryFilter: action.payload };
 
     default:
       return state;
@@ -301,6 +306,12 @@ export function useAppActions() {
     [dispatch]
   );
 
+  const setCategoryFilter = useCallback(
+    (category: string | null) =>
+      dispatch({ type: 'SET_CATEGORY_FILTER', payload: category }),
+    [dispatch]
+  );
+
   return {
     addRestaurant,
     removeRestaurant,
@@ -315,5 +326,6 @@ export function useAppActions() {
     clearPull,
     clearHistory,
     setView,
+    setCategoryFilter,
   };
 }

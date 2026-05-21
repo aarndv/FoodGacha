@@ -39,7 +39,7 @@ export default function BottomNav() {
   const { setView } = useAppActions();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-[#0d0d24]/90 backdrop-blur-xl">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-100 bg-white/95 backdrop-blur-xl">
       <div className="flex items-center justify-around max-w-lg mx-auto h-16">
         {TABS.map((tab) => {
           const active = state.view === tab.id;
@@ -47,25 +47,19 @@ export default function BottomNav() {
             <button
               key={tab.id}
               onClick={() => setView(tab.id)}
-              className={`relative flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-colors ${active ? 'text-white' : 'text-white/40 hover:text-white/60'
-                }`}
+              className={`relative flex flex-col items-center gap-1 px-4 py-2 transition-all ${
+                active ? 'text-amber-500 scale-110' : 'text-gray-400 hover:text-gray-600'
+              }`}
               id={`nav-${tab.id}`}
             >
-              {active && (
-                <motion.div
-                  layoutId="nav-indicator"
-                  className="absolute inset-0 rounded-xl bg-white/[0.08]"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-              )}
               <span className="relative z-10">{tab.icon}</span>
-              <span className="relative z-10 text-[10px] font-semibold tracking-wider uppercase">
+              <span className="relative z-10 text-[9px] font-black tracking-widest uppercase">
                 {tab.label}
               </span>
-              {tab.id === 'pull' && active && (
+              {active && (
                 <motion.div
-                  className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-amber-500"
-                  layoutId="nav-glow"
+                  layoutId="nav-dot"
+                  className="absolute -bottom-1 w-1 h-1 rounded-full bg-amber-500"
                 />
               )}
             </button>

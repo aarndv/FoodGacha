@@ -3,19 +3,11 @@ import type { Restaurant, Rarity } from '../types';
 import RarityBadge from './RarityBadge';
 
 const GLOW_COLORS: Record<Rarity, string> = {
-  common: 'shadow-slate-500/20',
-  uncommon: 'shadow-emerald-500/30',
-  rare: 'shadow-blue-500/40',
-  epic: 'shadow-purple-500/50',
-  legendary: 'shadow-amber-500/60',
-};
-
-const BORDER_COLORS: Record<Rarity, string> = {
-  common: 'border-l-slate-500',
-  uncommon: 'border-l-emerald-500',
-  rare: 'border-l-blue-500',
-  epic: 'border-l-purple-500',
-  legendary: 'border-l-amber-400',
+  common: 'shadow-slate-200',
+  uncommon: 'shadow-emerald-100',
+  rare: 'shadow-blue-100',
+  epic: 'shadow-purple-100',
+  legendary: 'shadow-amber-200',
 };
 
 interface Props {
@@ -44,81 +36,133 @@ export default function RestaurantCard({
           damping: 20,
           mass: 1.2,
         }}
-        className={`relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 text-center shadow-2xl ${GLOW_COLORS[restaurant.rarity]}`}
+        className={`relative rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-2xl ${GLOW_COLORS[restaurant.rarity]}`}
         style={{ perspective: 1000 }}
       >
         {/* Rarity glow ring */}
         <motion.div
-          className="absolute inset-0 rounded-2xl"
+          className="absolute inset-0 rounded-3xl"
           initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 0.6, 0.3, 0.6, 0.3] }}
+          animate={{ opacity: [0, 0.4, 0.2, 0.4, 0.2] }}
           transition={{ duration: 2, repeat: Infinity }}
           style={{
             boxShadow: `0 0 60px 20px ${getRarityColor(restaurant.rarity)}`,
           }}
         />
 
-        <motion.div
-          className="text-7xl mb-4"
-          initial={{ scale: 0, rotate: -180 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.2 }}
-        >
-          {restaurant.emoji}
-        </motion.div>
+        <div className="relative z-10">
+          {restaurant.imageUrl ? (
+            <motion.img
+              src={restaurant.imageUrl}
+              alt={restaurant.name}
+              className="w-full h-48 object-cover rounded-2xl mb-6 shadow-md"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            />
+          ) : (
+            <motion.div
+              className="text-7xl mb-6"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.2 }}
+            >
+              {restaurant.emoji}
+            </motion.div>
+          )}
 
-        <motion.h2
-          className="text-2xl font-bold text-white mb-3 font-[Outfit]"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          {restaurant.name}
-        </motion.h2>
+          <motion.h2
+            className="text-3xl font-black text-gray-900 mb-2 font-[Outfit]"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            {restaurant.name}
+          </motion.h2>
 
-        <RarityBadge rarity={restaurant.rarity} size="md" animate />
+          {restaurant.category && (
+            <motion.span
+              className="inline-block px-3 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-bold uppercase tracking-wider mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              {restaurant.category}
+            </motion.span>
+          )}
+
+          <div className="flex justify-center">
+            <RarityBadge rarity={restaurant.rarity} size="md" animate />
+          </div>
+        </div>
       </motion.div>
     );
   }
 
-  // List variant
+  // List variant (Card style like reference image)
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20, scale: 0.9 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
       transition={{ delay: index * 0.03 }}
-      className={`group relative flex items-center gap-3 rounded-xl border border-white/5 border-l-4 ${BORDER_COLORS[restaurant.rarity]} bg-white/[0.03] backdrop-blur-sm p-3 hover:bg-white/[0.06] transition-colors`}
+      className={`group relative overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col`}
     >
-      <span className="text-2xl shrink-0">{restaurant.emoji}</span>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white truncate">{restaurant.name}</p>
-        <RarityBadge rarity={restaurant.rarity} />
+      <div className="relative h-32 w-full overflow-hidden bg-gray-50">
+        {restaurant.imageUrl ? (
+          <img 
+            src={restaurant.imageUrl} 
+            alt={restaurant.name} 
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-4xl bg-gradient-to-br from-gray-50 to-gray-100">
+            {restaurant.emoji}
+          </div>
+        )}
+        
+        {/* Rarity accent bar */}
+        <div className={`absolute bottom-0 left-0 right-0 h-1 ${getRarityBg(restaurant.rarity)}`} />
       </div>
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        {onEdit && (
-          <button
-            onClick={onEdit}
-            className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors"
-            aria-label="Edit restaurant"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-              <path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
-            </svg>
-          </button>
-        )}
-        {onRemove && (
-          <button
-            onClick={onRemove}
-            className="p-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-            aria-label="Remove restaurant"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-              <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022 1.005 11.36A2.75 2.75 0 007.77 20h4.46a2.75 2.75 0 002.751-2.689l1.005-11.36.149.022a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
-            </svg>
-          </button>
-        )}
+
+      <div className="p-4 flex flex-col gap-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-base font-bold text-gray-900 truncate leading-tight">{restaurant.name}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <RarityBadge rarity={restaurant.rarity} />
+              {restaurant.category && (
+                <span className="text-[10px] font-bold text-gray-400 uppercase">{restaurant.category}</span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+            {onEdit && (
+              <button
+                onClick={onEdit}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                aria-label="Edit restaurant"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                  <path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
+                </svg>
+              </button>
+            )}
+            {onRemove && (
+              <button
+                onClick={onRemove}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                aria-label="Remove restaurant"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                  <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022 1.005 11.36A2.75 2.75 0 007.77 20h4.46a2.75 2.75 0 002.751-2.689l1.005-11.36.149.022a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </motion.div>
   );
@@ -126,11 +170,22 @@ export default function RestaurantCard({
 
 function getRarityColor(rarity: Rarity): string {
   const colors: Record<Rarity, string> = {
-    common: 'rgba(148,163,184,0.15)',
-    uncommon: 'rgba(52,211,153,0.25)',
-    rare: 'rgba(96,165,250,0.3)',
-    epic: 'rgba(168,85,247,0.35)',
-    legendary: 'rgba(251,191,36,0.4)',
+    common: 'rgba(148,163,184,0.1)',
+    uncommon: 'rgba(52,211,153,0.15)',
+    rare: 'rgba(96,165,250,0.15)',
+    epic: 'rgba(168,85,247,0.15)',
+    legendary: 'rgba(251,191,36,0.2)',
+  };
+  return colors[rarity];
+}
+
+function getRarityBg(rarity: Rarity): string {
+  const colors: Record<Rarity, string> = {
+    common: 'bg-slate-400',
+    uncommon: 'bg-emerald-500',
+    rare: 'bg-blue-500',
+    epic: 'bg-purple-500',
+    legendary: 'bg-amber-500',
   };
   return colors[rarity];
 }

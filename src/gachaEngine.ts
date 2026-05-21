@@ -13,13 +13,18 @@ import { RARITIES, RARITY_RANK, RARITY_XP, PITY_THRESHOLD } from './types';
 export function executePull(
   restaurants: Restaurant[],
   weights: PullWeights,
-  pityCounter: number = 0
+  pityCounter: number = 0,
+  categoryFilter: string | null = null
 ): PullResult | null {
-  if (restaurants.length === 0) return null;
+  let pool = restaurants;
+  if (categoryFilter) {
+    pool = restaurants.filter((r) => r.category === categoryFilter);
+  }
+  if (pool.length === 0) return null;
 
   // Group by rarity
   const grouped: Partial<Record<Rarity, Restaurant[]>> = {};
-  for (const r of restaurants) {
+  for (const r of pool) {
     if (!grouped[r.rarity]) grouped[r.rarity] = [];
     grouped[r.rarity]!.push(r);
   }
@@ -72,8 +77,8 @@ export function executePull(
   }
 
   // Pick uniformly from the selected tier
-  const pool = grouped[selectedRarity]!;
-  const picked = pool[Math.floor(Math.random() * pool.length)];
+  const tierPool = grouped[selectedRarity]!;
+  const picked = tierPool[Math.floor(Math.random() * tierPool.length)];
 
   return {
     id: crypto.randomUUID(),

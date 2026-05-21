@@ -32,6 +32,8 @@ export interface Restaurant {
   name: string;
   rarity: Rarity;
   emoji: string;
+  imageUrl?: string;
+  category?: string;
 }
 
 export type PullDecision = 'eat' | 'pass' | null;
@@ -121,6 +123,9 @@ export interface AppState {
   /* Virtual Points */
   virtualPoints: number;
   lastDailyClaimDate: string | null; // ISO date string "YYYY-MM-DD"
+
+  /* Filters */
+  activeCategoryFilter: string | null;
 }
 
 export type AppAction =
@@ -136,4 +141,5 @@ export type AppAction =
   | { type: 'SPEND_POINTS'; payload: number }
   | { type: 'CLEAR_PULL' }
   | { type: 'CLEAR_HISTORY' }
-  | { type: 'SET_VIEW'; payload: View };
+  | { type: 'SET_VIEW'; payload: View }
+  | { type: 'SET_CATEGORY_FILTER'; payload: string | null };

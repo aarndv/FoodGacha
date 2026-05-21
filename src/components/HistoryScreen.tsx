@@ -1,43 +1,28 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppState, useAppActions } from '../hooks/useAppState';
-import { RARITIES, RARITY_LABELS } from '../types';
-import type { Rarity, PullDecision } from '../types';
 import RarityBadge from './RarityBadge';
+import type { Rarity, PullDecision } from '../types';
 
-const RARITY_DOT_COLORS: Record<Rarity, string> = {
-  common: 'bg-slate-400',
-  uncommon: 'bg-emerald-400',
-  rare: 'bg-blue-400',
-  epic: 'bg-purple-400',
-  legendary: 'bg-amber-400',
-};
-
-function formatDate(ts: number): string {
-  const d = new Date(ts);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const month = months[d.getMonth()];
-  const day = d.getDate();
-  const year = d.getFullYear();
-  const hours = d.getHours();
-  const minutes = d.getMinutes().toString().padStart(2, '0');
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  const h12 = hours % 12 || 12;
-  return `${month} ${day}, ${year} · ${h12}:${minutes} ${ampm}`;
+function formatDate(timestamp: number) {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(timestamp);
 }
 
 function decisionBadge(decision: PullDecision) {
   if (!decision) return null;
-  if (decision === 'eat') {
-    return (
-      <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
-        🍽️ Ate
-      </span>
-    );
-  }
+  const isEat = decision === 'eat';
   return (
-    <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-white/30 bg-white/[0.04] px-1.5 py-0.5 rounded-full">
-      Passed
+    <span
+      className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter ${
+        isEat ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-400'
+      }`}
+    >
+      {isEat ? 'Ordered' : 'Passed'}
     </span>
   );
 }
@@ -47,13 +32,16 @@ export default function HistoryScreen() {
   const { clearHistory } = useAppActions();
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const rarityCounts = RARITIES.reduce((acc, r) => {
-    acc[r] = state.pullHistory.filter((p) => p.restaurant.rarity === r).length;
-    return acc;
-  }, {} as Record<Rarity, number>);
-
-  const eatCount = state.pullHistory.filter((p) => p.decision === 'eat').length;
-  const passCount = state.pullHistory.filter((p) => p.decision === 'pass').length;
+  const stats = useMemo(() => {
+    const acc = {} as Record<Rarity, number>;
+    state.pullHistory.forEach((p) => {
+      const r = p.restaurant.rarity;
+      acc[r] = (acc[r] || 0) + 1;
+    });
+    const eatCount = state.pullHistory.filter((p) => p.decision === 'eat').length;
+    const passCount = state.pullHistory.filter((p) => p.decision === 'pass').length;
+    return { acc, eatCount, passCount };
+  }, [state.pullHistory]);
 
   return (
     <motion.div
@@ -64,94 +52,83 @@ export default function HistoryScreen() {
     >
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-extrabold text-white font-[Outfit] tracking-tight">
-            Pull History
+          <h1 className="text-3xl font-black text-gray-900 font-[Outfit] tracking-tight">
+            Order History
           </h1>
-          <p className="text-sm text-white/40 mt-1">
-            {state.pullHistory.length} total pulls
+          <p className="text-sm text-gray-400 mt-1">
+            {state.pullHistory.length} total pulls recorded
           </p>
         </div>
         {state.pullHistory.length > 0 && (
           <button
             onClick={() => setShowConfirm(true)}
-            className="text-xs text-red-400/60 hover:text-red-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-500/10"
-            id="clear-history-btn"
+            className="p-2 rounded-xl bg-gray-100 text-gray-400 hover:text-red-500 transition-colors"
+            title="Clear History"
           >
-            Clear All
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+              <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022 1.005 11.36A2.75 2.75 0 007.77 20h4.46a2.75 2.75 0 002.751-2.689l1.005-11.36.149.022a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
+            </svg>
           </button>
         )}
       </div>
 
-      {/* Stats bar */}
       {state.pullHistory.length > 0 && (
-        <div className="space-y-3 mb-6">
-          {/* Rarity counts */}
-          <div className="flex flex-wrap gap-2">
-            {RARITIES.map((r) =>
-              rarityCounts[r] > 0 ? (
-                <motion.div
-                  key={r}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/5"
-                >
-                  <div className={`w-2 h-2 rounded-full ${RARITY_DOT_COLORS[r]}`} />
-                  <span className="text-[10px] text-white/50 font-medium">
-                    {RARITY_LABELS[r]}
-                  </span>
-                  <span className="text-[10px] text-white/80 font-bold">
-                    {rarityCounts[r]}
-                  </span>
-                </motion.div>
-              ) : null
-            )}
+        <div className="grid grid-cols-3 gap-3 mb-8">
+          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+            <p className="text-xl font-black text-gray-900">{stats.eatCount}</p>
+            <p className="text-[10px] font-bold uppercase text-emerald-500">Ordered</p>
           </div>
-
-          {/* Eat/Pass summary */}
-          <div className="flex gap-3">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              <span className="text-[10px]">🍽️</span>
-              <span className="text-[10px] text-emerald-400 font-bold">{eatCount} ate</span>
-            </div>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/5">
-              <span className="text-[10px] text-white/50 font-bold">{passCount} passed</span>
-            </div>
+          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+            <p className="text-xl font-black text-gray-900">{stats.passCount}</p>
+            <p className="text-[10px] font-bold uppercase text-gray-400">Passed</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+            <p className="text-xl font-black text-gray-900">{Math.round((stats.eatCount / state.pullHistory.length) * 100)}%</p>
+            <p className="text-[10px] font-bold uppercase text-amber-500">Rate</p>
           </div>
         </div>
       )}
 
-      {/* Pull list */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <AnimatePresence>
           {state.pullHistory.map((pull, i) => (
             <motion.div
               key={pull.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.02 }}
-              className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3"
+              className="group flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all"
             >
-              <span className="text-2xl shrink-0">{pull.restaurant.emoji}</span>
+              <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-2xl shrink-0 overflow-hidden">
+                {pull.restaurant.imageUrl ? (
+                  <img src={pull.restaurant.imageUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  pull.restaurant.emoji
+                )}
+              </div>
+              
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-white truncate">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-sm font-bold text-gray-900 truncate">
                     {pull.restaurant.name}
                   </p>
                   {pull.wasPity && (
-                    <span className="text-[9px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full font-semibold shrink-0">
-                      PITY
+                    <span className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-600 text-[8px] font-black uppercase tracking-widest">
+                      Pity
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                <div className="flex items-center gap-2">
                   <RarityBadge rarity={pull.restaurant.rarity} />
                   {decisionBadge(pull.decision)}
-                  <span className="text-[10px] text-purple-400/60 font-medium">
+                  <span className="text-[10px] font-bold text-amber-500">
                     +{pull.xpEarned} XP
                   </span>
                 </div>
-                <p className="text-[10px] text-white/20 mt-1">
+              </div>
+
+              <div className="text-right shrink-0">
+                <p className="text-[10px] font-bold text-gray-300">
                   {formatDate(pull.timestamp)}
                 </p>
               </div>
@@ -160,55 +137,47 @@ export default function HistoryScreen() {
         </AnimatePresence>
 
         {state.pullHistory.length === 0 && (
-          <div className="text-center py-16 text-white/30 text-sm">
-            <p className="text-4xl mb-3">🎰</p>
-            No pulls yet. Hit that button!
+          <div className="text-center py-20 bg-white rounded-3xl border border-gray-100">
+            <p className="text-6xl mb-4">📜</p>
+            <p className="text-gray-400 font-medium">No orders yet. Start pulling!</p>
           </div>
         )}
       </div>
 
-      {/* Confirm dialog */}
+      {/* Confirmation Modal */}
       <AnimatePresence>
         {showConfirm && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
             <motion.div
-              className="bg-[#1a1a3a] border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center"
             >
-              <h3 className="text-lg font-bold text-white mb-2 font-[Outfit]">
-                Clear History?
-              </h3>
-              <p className="text-sm text-white/50 mb-5">
-                This will permanently delete all {state.pullHistory.length} pull
-                records. This cannot be undone.
+              <p className="text-3xl mb-4">🗑️</p>
+              <h3 className="text-xl font-black text-gray-900 mb-2">Clear History?</h3>
+              <p className="text-sm text-gray-400 mb-8 leading-relaxed">
+                This will permanently delete all {state.pullHistory.length} pull records. This cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowConfirm(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-white/[0.06] text-white/60 text-sm font-medium hover:bg-white/[0.1] transition-colors"
+                  className="flex-1 py-3.5 rounded-2xl bg-gray-100 text-gray-500 text-sm font-bold hover:bg-gray-200 transition-all"
                 >
-                  Cancel
+                  Keep It
                 </button>
                 <button
                   onClick={() => {
                     clearHistory();
                     setShowConfirm(false);
                   }}
-                  className="flex-1 py-2.5 rounded-xl bg-red-500/20 text-red-400 text-sm font-semibold hover:bg-red-500/30 transition-colors"
-                  id="confirm-clear-btn"
+                  className="flex-1 py-3.5 rounded-2xl bg-red-500 text-white text-sm font-black uppercase tracking-widest hover:bg-red-400 transition-all"
                 >
-                  Delete All
+                  Clear All
                 </button>
               </div>
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </motion.div>

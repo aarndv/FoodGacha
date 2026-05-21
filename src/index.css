@@ -15,8 +15,8 @@ html {
 body {
   margin: 0;
   padding: 0;
-  background-color: #0a0a1a;
-  color: #ffffff;
+  background-color: #f9fafb; /* Light Gray */
+  color: #111827; /* Dark Gray/Black */
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
 }
@@ -32,12 +32,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /* ── Range slider styling ────────────────────────────── */
@@ -48,37 +48,53 @@ input[type='range'] {
   height: 6px;
   border-radius: 3px;
   outline: none;
+  background: #e5e7eb;
 }
 
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: #ffffff;
+  background: #f59e0b; /* Amber 500 */
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   transition: transform 0.15s ease;
+  border: 2px solid white;
 }
 
 input[type='range']::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
+  transform: scale(1.1);
 }
 
 input[type='range']::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: #ffffff;
+  background: #f59e0b;
   cursor: pointer;
-  border: none;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  border: 2px solid white;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 /* ── Select dropdown styling ─────────────────────────── */
 
 select option {
-  background-color: #1a1a3a;
-  color: #ffffff;
+  background-color: white;
+  color: #111827;
+}
+
+/* ── Custom Utilites ─────────────────────────────────── */
+
+.glass-card {
+  @apply bg-white border border-gray-100 shadow-sm backdrop-blur-md;
+}
+
+.primary-gradient {
+  @apply bg-gradient-to-r from-amber-500 to-orange-500;
+}
+
+.text-gradient {
+  @apply bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent;
 }
