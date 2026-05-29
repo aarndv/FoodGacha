@@ -39,7 +39,7 @@ export default function BottomNav() {
   const { setView } = useAppActions();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-100 bg-white/95 backdrop-blur-xl">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-100 dark:border-white/10 bg-white/95 dark:bg-[#0a0a1a]/95 backdrop-blur-xl transition-colors duration-300">
       <div className="flex items-center justify-around max-w-lg mx-auto h-16">
         {TABS.map((tab) => {
           const active = state.view === tab.id;
@@ -48,7 +48,7 @@ export default function BottomNav() {
               key={tab.id}
               onClick={() => setView(tab.id)}
               className={`relative flex flex-col items-center gap-1 px-4 py-2 transition-all ${
-                active ? 'text-amber-500 scale-110' : 'text-gray-400 hover:text-gray-600'
+                active ? 'text-brand-500 scale-110' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
               }`}
               id={`nav-${tab.id}`}
             >
@@ -59,7 +59,7 @@ export default function BottomNav() {
               {active && (
                 <motion.div
                   layoutId="nav-dot"
-                  className="absolute -bottom-1 w-1 h-1 rounded-full bg-amber-500"
+                  className="absolute -bottom-1 w-1 h-1 rounded-full bg-brand-500 shadow-[0_0_8px_var(--brand-500)]"
                 />
               )}
             </button>

@@ -48,11 +48,11 @@ export default function HistoryScreen() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen pb-24 px-4 pt-6 max-w-lg mx-auto"
+      className="min-h-screen pb-24 px-4 pt-6 max-w-lg mx-auto transition-colors duration-300"
     >
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 font-[Outfit] tracking-tight">
+          <h1 className="text-3xl font-black text-gray-900 dark:text-white font-[Outfit] tracking-tight">
             Order History
           </h1>
           <p className="text-sm text-gray-400 mt-1">
@@ -62,7 +62,7 @@ export default function HistoryScreen() {
         {state.pullHistory.length > 0 && (
           <button
             onClick={() => setShowConfirm(true)}
-            className="p-2 rounded-xl bg-gray-100 text-gray-400 hover:text-red-500 transition-colors"
+            className="p-2 rounded-xl bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-red-500 transition-colors"
             title="Clear History"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
@@ -74,17 +74,17 @@ export default function HistoryScreen() {
 
       {state.pullHistory.length > 0 && (
         <div className="grid grid-cols-3 gap-3 mb-8">
-          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
-            <p className="text-xl font-black text-gray-900">{stats.eatCount}</p>
+          <div className="bg-white dark:bg-white/5 rounded-2xl p-4 border border-gray-100 dark:border-white/10 shadow-sm text-center">
+            <p className="text-xl font-black text-gray-900 dark:text-white">{stats.eatCount}</p>
             <p className="text-[10px] font-bold uppercase text-emerald-500">Ordered</p>
           </div>
-          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
-            <p className="text-xl font-black text-gray-900">{stats.passCount}</p>
+          <div className="bg-white dark:bg-white/5 rounded-2xl p-4 border border-gray-100 dark:border-white/10 shadow-sm text-center">
+            <p className="text-xl font-black text-gray-900 dark:text-white">{stats.passCount}</p>
             <p className="text-[10px] font-bold uppercase text-gray-400">Passed</p>
           </div>
-          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
-            <p className="text-xl font-black text-gray-900">{Math.round((stats.eatCount / state.pullHistory.length) * 100)}%</p>
-            <p className="text-[10px] font-bold uppercase text-amber-500">Rate</p>
+          <div className="bg-white dark:bg-white/5 rounded-2xl p-4 border border-gray-100 dark:border-white/10 shadow-sm text-center">
+            <p className="text-xl font-black text-gray-900 dark:text-white">{Math.round((stats.eatCount / state.pullHistory.length) * 100)}%</p>
+            <p className="text-[10px] font-bold uppercase text-brand-500">Rate</p>
           </div>
         </div>
       )}
@@ -97,23 +97,23 @@ export default function HistoryScreen() {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.02 }}
-              className="group flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all"
+              className="group flex items-center gap-4 bg-white dark:bg-white/5 p-4 rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-md transition-all"
             >
-              <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-2xl shrink-0 overflow-hidden">
+              <div className="w-12 h-12 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 flex items-center justify-center text-2xl shrink-0 overflow-hidden">
                 {pull.restaurant.imageUrl ? (
                   <img src={pull.restaurant.imageUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
                   pull.restaurant.emoji
                 )}
               </div>
-              
+
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <p className="text-sm font-bold text-gray-900 truncate">
+                  <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
                     {pull.restaurant.name}
                   </p>
                   {pull.wasPity && (
-                    <span className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-600 text-[8px] font-black uppercase tracking-widest">
+                    <span className="px-1.5 py-0.5 rounded-full bg-brand-100 dark:bg-brand-500/10 text-brand-600 text-[8px] font-black uppercase tracking-widest">
                       Pity
                     </span>
                   )}
@@ -121,14 +121,14 @@ export default function HistoryScreen() {
                 <div className="flex items-center gap-2">
                   <RarityBadge rarity={pull.restaurant.rarity} />
                   {decisionBadge(pull.decision)}
-                  <span className="text-[10px] font-bold text-amber-500">
+                  <span className="text-[10px] font-bold text-brand-500">
                     +{pull.xpEarned} XP
                   </span>
                 </div>
               </div>
 
               <div className="text-right shrink-0">
-                <p className="text-[10px] font-bold text-gray-300">
+                <p className="text-[10px] font-bold text-gray-300 dark:text-gray-600">
                   {formatDate(pull.timestamp)}
                 </p>
               </div>
@@ -137,7 +137,7 @@ export default function HistoryScreen() {
         </AnimatePresence>
 
         {state.pullHistory.length === 0 && (
-          <div className="text-center py-20 bg-white rounded-3xl border border-gray-100">
+          <div className="text-center py-20 bg-white dark:bg-white/5 rounded-3xl border border-gray-100 dark:border-white/10">
             <p className="text-6xl mb-4">📜</p>
             <p className="text-gray-400 font-medium">No orders yet. Start pulling!</p>
           </div>
@@ -147,22 +147,22 @@ export default function HistoryScreen() {
       {/* Confirmation Modal */}
       <AnimatePresence>
         {showConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 dark:bg-black/60 backdrop-blur-sm">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center"
+              className="bg-white dark:bg-[#111827] rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center border border-gray-100 dark:border-white/10"
             >
               <p className="text-3xl mb-4">🗑️</p>
-              <h3 className="text-xl font-black text-gray-900 mb-2">Clear History?</h3>
+              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Clear History?</h3>
               <p className="text-sm text-gray-400 mb-8 leading-relaxed">
                 This will permanently delete all {state.pullHistory.length} pull records. This cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowConfirm(false)}
-                  className="flex-1 py-3.5 rounded-2xl bg-gray-100 text-gray-500 text-sm font-bold hover:bg-gray-200 transition-all"
+                  className="flex-1 py-3.5 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-sm font-bold hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
                 >
                   Keep It
                 </button>

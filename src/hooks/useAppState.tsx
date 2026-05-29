@@ -64,6 +64,9 @@ function getInitialState(): AppState {
     lastDailyClaimDate: loadFromStorage('lastDailyClaimDate', null),
 
     activeCategoryFilter: null,
+    theme: loadFromStorage('theme', 'system'),
+    accentColor: loadFromStorage('accentColor', 'amber'),
+    restaurantLayout: loadFromStorage('restaurantLayout', 'grid'),
   };
 }
 
@@ -169,6 +172,15 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'SET_CATEGORY_FILTER':
       return { ...state, activeCategoryFilter: action.payload };
 
+    case 'SET_THEME':
+      return { ...state, theme: action.payload };
+
+    case 'SET_ACCENT_COLOR':
+      return { ...state, accentColor: action.payload };
+
+    case 'SET_RESTAURANT_LAYOUT':
+      return { ...state, restaurantLayout: action.payload };
+
     default:
       return state;
   }
@@ -214,6 +226,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     saveToStorage('lastDailyClaimDate', state.lastDailyClaimDate);
   }, [state.lastDailyClaimDate]);
+
+  useEffect(() => {
+    saveToStorage('theme', state.theme);
+  }, [state.theme]);
+
+  useEffect(() => {
+    saveToStorage('accentColor', state.accentColor);
+  }, [state.accentColor]);
+
+  useEffect(() => {
+    saveToStorage('restaurantLayout', state.restaurantLayout);
+  }, [state.restaurantLayout]);
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>
@@ -312,6 +336,24 @@ export function useAppActions() {
     [dispatch]
   );
 
+  const setTheme = useCallback(
+    (theme: AppState['theme']) =>
+      dispatch({ type: 'SET_THEME', payload: theme }),
+    [dispatch]
+  );
+
+  const setAccentColor = useCallback(
+    (color: AppState['accentColor']) =>
+      dispatch({ type: 'SET_ACCENT_COLOR', payload: color }),
+    [dispatch]
+  );
+
+  const setRestaurantLayout = useCallback(
+    (layout: AppState['restaurantLayout']) =>
+      dispatch({ type: 'SET_RESTAURANT_LAYOUT', payload: layout }),
+    [dispatch]
+  );
+
   return {
     addRestaurant,
     removeRestaurant,
@@ -327,5 +369,8 @@ export function useAppActions() {
     clearHistory,
     setView,
     setCategoryFilter,
+    setTheme,
+    setAccentColor,
+    setRestaurantLayout,
   };
 }

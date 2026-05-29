@@ -6,7 +6,7 @@ const RARITY_PARTICLE_COLORS: Record<Rarity, string[]> = {
   uncommon: ['#34d399', '#6ee7b7', '#10b981'],
   rare: ['#60a5fa', '#93c5fd', '#3b82f6'],
   epic: ['#a855f7', '#c084fc', '#7c3aed'],
-  legendary: ['#fbbf24', '#fcd34d', '#f59e0b', '#ffffff'],
+  legendary: ['var(--brand-400)', 'var(--brand-500)', 'var(--brand-300)', '#ffffff'],
 };
 
 interface Particle {

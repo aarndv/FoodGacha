@@ -22,10 +22,10 @@ const BG_GLOW: Record<Rarity, string> = {
 };
 
 const WINDUP_COLORS: Record<number, string> = {
-  1: 'via-amber-400/60',
-  5: 'via-orange-400/60',
-  7: 'via-pink-400/60',
-  10: 'via-yellow-400/60',
+  1: 'via-brand-400/60',
+  5: 'via-brand-500/60',
+  7: 'via-brand-600/60',
+  10: 'via-brand-700/60',
 };
 
 export default function PullScreen() {
@@ -142,7 +142,7 @@ export default function PullScreen() {
     ? 'radial-gradient(circle, rgba(168,85,247,0.4) 0%, transparent 100%)'
     : resultRarity === 'rare'
     ? 'radial-gradient(circle, rgba(96,165,250,0.3) 0%, transparent 100%)'
-    : 'radial-gradient(circle, rgba(245,158,11,0.2) 0%, transparent 100%)';
+    : 'radial-gradient(circle, var(--brand-500) 0.2, transparent 100%)';
 
   const shouldShake =
     phase === 'reveal' &&
@@ -151,14 +151,14 @@ export default function PullScreen() {
       (resultRarity === 'rare' && state.level >= 10));
 
   return (
-    <div className="relative min-h-[calc(100vh-80px)] md:min-h-screen flex flex-col items-center justify-center overflow-hidden py-10">
+    <div className="relative min-h-[calc(100vh-80px)] md:min-h-screen flex flex-col items-center justify-center overflow-hidden py-10 transition-colors duration-300">
       {showConfetti && (
         <Confetti
           width={window.innerWidth}
           height={window.innerHeight}
           recycle={false}
           numberOfPieces={resultRarity === 'legendary' ? 400 : 200}
-          colors={['#fbbf24', '#f59e0b', '#fcd34d', '#ffffff', '#fef3c7']}
+          colors={['var(--brand-400)', 'var(--brand-500)', 'var(--brand-300)', '#ffffff', 'var(--brand-100)']}
           gravity={0.3}
           style={{ position: 'fixed', top: 0, left: 0, zIndex: 60 }}
         />
@@ -202,11 +202,11 @@ export default function PullScreen() {
               />
             ))}
             <motion.div
-              className="w-4 h-4 rounded-full bg-amber-400"
+              className="w-4 h-4 rounded-full bg-brand-400"
               initial={{ scale: 0 }}
               animate={{ scale: [0, 1.5, 0.8, 1.2] }}
               transition={{ duration: 0.8 }}
-              style={{ boxShadow: '0 0 40px 20px rgba(245,158,11,0.3)' }}
+              style={{ boxShadow: '0 0 40px 20px var(--brand-500) 0.3' }}
             />
           </motion.div>
         )}
@@ -229,7 +229,7 @@ export default function PullScreen() {
       <AnimatePresence>
         {xpPopup !== null && (
           <motion.div
-            className="fixed top-24 left-1/2 z-50 -translate-x-1/2 px-4 py-2 rounded-full bg-amber-500 text-white text-sm font-black shadow-lg"
+            className="fixed top-24 left-1/2 z-50 -translate-x-1/2 px-4 py-2 rounded-full bg-brand-500 text-white text-sm font-black shadow-lg"
             initial={{ opacity: 0, y: 20, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20 }}
@@ -276,8 +276,8 @@ export default function PullScreen() {
                     onClick={() => setCategoryFilter(null)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                       state.activeCategoryFilter === null 
-                        ? 'bg-amber-500 text-white shadow-md' 
-                        : 'bg-white text-gray-400 border border-gray-100'
+                        ? 'bg-brand-500 text-white shadow-md' 
+                        : 'bg-white dark:bg-white/5 text-gray-400 dark:text-gray-500 border border-gray-100 dark:border-white/10'
                     }`}
                   >
                     All
@@ -288,8 +288,8 @@ export default function PullScreen() {
                       onClick={() => setCategoryFilter(cat)}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                         state.activeCategoryFilter === cat 
-                          ? 'bg-amber-500 text-white shadow-md' 
-                          : 'bg-white text-gray-400 border border-gray-100'
+                          ? 'bg-brand-500 text-white shadow-md' 
+                          : 'bg-white dark:bg-white/5 text-gray-400 dark:text-gray-500 border border-gray-100 dark:border-white/10'
                       }`}
                     >
                       {cat}
@@ -307,12 +307,12 @@ export default function PullScreen() {
                 whileTap={{ scale: 0.95 }}
               >
                 <motion.div
-                  className="absolute inset-0 rounded-full bg-amber-500/20"
+                  className="absolute inset-0 rounded-full bg-brand-500/20"
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 />
-                <div className="relative w-40 h-40 rounded-full bg-white p-2 shadow-2xl border border-gray-100">
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 flex items-center justify-center">
+                <div className="relative w-40 h-40 rounded-full bg-white dark:bg-gray-900 p-2 shadow-2xl border border-gray-100 dark:border-white/10">
+                  <div className="w-full h-full rounded-full bg-gradient-to-br from-brand-400 via-brand-500 to-brand-600 flex items-center justify-center">
                     <span className="text-3xl font-black font-[Outfit] text-white tracking-widest drop-shadow-md">
                       PULL
                     </span>
@@ -321,18 +321,18 @@ export default function PullScreen() {
               </motion.button>
 
               {!canPull && (
-                <p className="text-amber-600 font-bold text-xs text-center bg-amber-50 px-4 py-2 rounded-full">
+                <p className="text-brand-600 font-bold text-xs text-center bg-brand-50 dark:bg-brand-500/10 px-4 py-2 rounded-full">
                   No {state.activeCategoryFilter} restaurants in your pool!
                 </p>
               )}
 
               {/* Status footer */}
-              <div className="flex items-center gap-6 px-6 py-3 rounded-2xl bg-white border border-gray-50 shadow-sm text-[10px] font-black text-gray-400 uppercase tracking-widest">
+              <div className="flex items-center gap-6 px-6 py-3 rounded-2xl bg-white dark:bg-white/5 border border-gray-50 dark:border-white/10 shadow-sm text-[10px] font-black text-gray-400 uppercase tracking-widest">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-amber-500">💎</span>
+                  <span className="text-brand-500">💎</span>
                   <span>{state.virtualPoints}</span>
                 </div>
-                <div className="w-px h-3 bg-gray-100" />
+                <div className="w-px h-3 bg-gray-100 dark:bg-white/10" />
                 <div className="flex items-center gap-1.5">
                   <span>Pity: {pityProgress}/10</span>
                   {pityClose && <span className="animate-pulse">🔥</span>}
@@ -354,7 +354,7 @@ export default function PullScreen() {
             >
               {state.currentPull.wasPity && (
                 <motion.div
-                  className="px-4 py-1.5 rounded-full bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg"
+                  className="px-4 py-1.5 rounded-full bg-brand-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg"
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
@@ -378,13 +378,13 @@ export default function PullScreen() {
                     <div className="flex gap-3 w-full">
                       <button
                         onClick={handleEat}
-                        className="flex-1 py-4 rounded-2xl bg-gray-900 text-white font-black text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all"
+                        className="flex-1 py-4 rounded-2xl bg-gray-900 dark:bg-white dark:text-[#0a0a1a] text-white font-black text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all"
                       >
                         Let's Eat!
                       </button>
                       <button
                         onClick={handlePass}
-                        className="flex-1 py-4 rounded-2xl bg-white border border-gray-100 text-gray-400 font-black text-sm uppercase tracking-widest hover:bg-gray-50 transition-all"
+                        className="flex-1 py-4 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 text-gray-400 font-black text-sm uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-white/10 transition-all"
                       >
                         Pass
                       </button>
@@ -395,8 +395,8 @@ export default function PullScreen() {
                     <motion.div
                       className={`text-center py-4 rounded-2xl text-sm font-black uppercase tracking-widest ${
                         state.currentPull.decision === 'eat'
-                          ? 'bg-amber-50 text-amber-600'
-                          : 'bg-gray-100 text-gray-400'
+                          ? 'bg-brand-50 dark:bg-brand-500/10 text-brand-600'
+                          : 'bg-gray-100 dark:bg-white/5 text-gray-400'
                       }`}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -409,7 +409,7 @@ export default function PullScreen() {
                     {!state.currentPull.decision && (canFreeReroll || canPointReroll) && (
                       <button
                         onClick={() => handleReroll(canFreeReroll)}
-                        className="flex-1 py-3 rounded-2xl bg-amber-50 text-amber-600 text-xs font-black uppercase tracking-widest border border-amber-100 hover:bg-amber-100 transition-all"
+                        className="flex-1 py-3 rounded-2xl bg-brand-50 dark:bg-brand-500/10 text-brand-600 text-xs font-black uppercase tracking-widest border border-brand-100 dark:border-brand-500/20 hover:bg-brand-100 dark:hover:bg-brand-500/20 transition-all"
                       >
                         🔄 Reroll
                         <span className="block text-[8px] opacity-60 mt-0.5">
@@ -420,7 +420,7 @@ export default function PullScreen() {
                     {(state.currentPull.decision || (!canFreeReroll && !canPointReroll)) && (
                       <button
                         onClick={handlePullAgain}
-                        className="flex-1 py-4 rounded-2xl bg-amber-500 text-white font-black text-sm uppercase tracking-widest shadow-lg shadow-amber-500/20"
+                        className="flex-1 py-4 rounded-2xl bg-brand-500 text-white font-black text-sm uppercase tracking-widest shadow-lg shadow-brand-500/20"
                       >
                         Pull Again!
                       </button>

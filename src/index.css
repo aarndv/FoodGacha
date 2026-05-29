@@ -1,6 +1,35 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
+}
+
 /* ── Global reset & base ─────────────────────────────── */
+
+:root {
+  /* Default Amber palette */
+  --brand-50: #fffbeb;
+  --brand-100: #fef3c7;
+  --brand-200: #fde68a;
+  --brand-300: #fcd34d;
+  --brand-400: #fbbf24;
+  --brand-500: #f59e0b;
+  --brand-600: #d97706;
+  --brand-700: #b45309;
+  --brand-800: #92400e;
+  --brand-900: #78350f;
+  --brand-950: #451a03;
+}
 
 * {
   -webkit-tap-highlight-color: transparent;
@@ -19,6 +48,12 @@ body {
   color: #111827; /* Dark Gray/Black */
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark body {
+  background-color: #0a0a1a;
+  color: #f9fafb;
 }
 
 /* ── Custom scrollbar ────────────────────────────────── */
@@ -36,8 +71,16 @@ body {
   border-radius: 2px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* ── Range slider styling ────────────────────────────── */
@@ -51,17 +94,25 @@ input[type='range'] {
   background: #e5e7eb;
 }
 
+.dark input[type='range'] {
+  background: #1f2937;
+}
+
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #f59e0b; /* Amber 500 */
+  background: var(--brand-500);
   cursor: pointer;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   transition: transform 0.15s ease;
   border: 2px solid white;
+}
+
+.dark input[type='range']::-webkit-slider-thumb {
+  border-color: #111827;
 }
 
 input[type='range']::-webkit-slider-thumb:hover {
@@ -72,7 +123,7 @@ input[type='range']::-moz-range-thumb {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #f59e0b;
+  background: var(--brand-500);
   cursor: pointer;
   border: 2px solid white;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -85,16 +136,25 @@ select option {
   color: #111827;
 }
 
+.dark select option {
+  background-color: #111827;
+  color: #f9fafb;
+}
+
 /* ── Custom Utilites ─────────────────────────────────── */
 
 .glass-card {
   @apply bg-white border border-gray-100 shadow-sm backdrop-blur-md;
 }
 
+.dark .glass-card {
+  @apply bg-white/5 border-white/10;
+}
+
 .primary-gradient {
-  @apply bg-gradient-to-r from-amber-500 to-orange-500;
+  @apply bg-gradient-to-r from-brand-500 to-brand-600;
 }
 
 .text-gradient {
-  @apply bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent;
 }

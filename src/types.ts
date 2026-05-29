@@ -101,6 +101,10 @@ export const DAILY_POINTS_REWARD = 30;
 
 export type View = 'dashboard' | 'pull' | 'history';
 
+export type Theme = 'light' | 'dark' | 'system';
+export type AccentColor = 'amber' | 'purple' | 'rose' | 'emerald';
+export type RestaurantLayout = 'grid' | 'list';
+
 export interface AppState {
   restaurants: Restaurant[];
   weights: PullWeights;
@@ -124,8 +128,11 @@ export interface AppState {
   virtualPoints: number;
   lastDailyClaimDate: string | null; // ISO date string "YYYY-MM-DD"
 
-  /* Filters */
+  /* Filters & UI */
   activeCategoryFilter: string | null;
+  theme: Theme;
+  accentColor: AccentColor;
+  restaurantLayout: RestaurantLayout;
 }
 
 export type AppAction =
@@ -142,4 +149,7 @@ export type AppAction =
   | { type: 'CLEAR_PULL' }
   | { type: 'CLEAR_HISTORY' }
   | { type: 'SET_VIEW'; payload: View }
-  | { type: 'SET_CATEGORY_FILTER'; payload: string | null };
+  | { type: 'SET_CATEGORY_FILTER'; payload: string | null }
+  | { type: 'SET_THEME'; payload: Theme }
+  | { type: 'SET_ACCENT_COLOR'; payload: AccentColor }
+  | { type: 'SET_RESTAURANT_LAYOUT'; payload: RestaurantLayout };
